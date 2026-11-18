@@ -12,8 +12,11 @@ let aPersonen = [
         res.send('Home!')
     });
     app.get('/personen', (req, res) => {
-        
         res.send(aPersonen);
 
+    });
+    app.get('/personen/sorted', (req, res) => {
+        aPersonen.sort((a, b) => a.vnaam.localeCompare(b.vnaam));
+        res.send(aPersonen);
     });
 }
