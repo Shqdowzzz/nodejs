@@ -1,7 +1,19 @@
 module.exports = function (app) {
-
+let aPersonen = [
+    { "vnaam": "Piet", "tv": "", "anaam":"Hein" },
+    { "vnaam": "Gerrit", "tv": "de", "anaam": "Zeur" },
+    { "vnaam": "Jan", "tv": "", "anaam": "Tromp" },
+]   
     app.get('/', (req, res) => {
         res.send('Hello World!')
     });
 
+    app.get('/home', (req, res) => {
+        res.send('Home!')
+    });
+    app.get('/personen', (req, res) => {
+        
+        res.send(aPersonen);
+
+    });
 }
