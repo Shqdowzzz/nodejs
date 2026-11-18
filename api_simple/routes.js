@@ -1,3 +1,4 @@
+const conn_db = require("./db_conn");  
 module.exports = function (app) {
 let aPersonen = [
     { "vnaam": "Piet", "tv": "", "anaam":"Hein" },
