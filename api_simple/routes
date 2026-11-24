@@ -1,34 +1,144 @@
-const conn_db = require("./db_conn");  
+const conn_db = require("./db_conn");
+const bodyParser = require('body-parser')
 
 module.exports = function (app) {
-let aPersonen = [
-    { "vnaam": "Piet", "tv": "", "anaam":"Hein" },
-    { "vnaam": "Gerrit", "tv": "de", "anaam": "Zeur" },
-    { "vnaam": "Jan", "tv": "", "anaam": "Tromp" },
-]   
+    app.use(bodyParser.json())
+    app.use(bodyParser.urlencoded({ extended: false }))
+
     app.get('/', (req, res) => {
-        res.send('Hello World!')
+        res.send('test test test')
     });
 
     app.get('/home', (req, res) => {
-        res.send('Home!')
+        res.send('Hello World!')
     });
-    app.get('/personen', (req, res) => {
-        res.send(aPersonen);
 
+    app.get('/personen', (req, res) => {
+        res.send(aPersonen)
     });
-    app.get('/personen/sorted', (req, res) => {
-        aPersonen.sort((a, b) => a.vnaam.localeCompare(b.vnaam));
-        res.send(aPersonen);
+
+    app.get('/bieren/all', function (req, res) {
+        let sql = "SELECT * FROM bier";
+        conn_db.query(sql, function (err, rows) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(rows)
+            }
+        })
     });
- app.get('/bieren', function (req, res) {
-    let sql = "SELECT * FROM bier";
-    conn_db.query(sql, function (err, rows) {
-        if (err) {
-            throw err;
-        } else {
-            res.send(rows)
-        }
-    })
-});
+
+        app.get('/bieren/brouwer', function (req, res) {
+        let sql = "SELECT DISTINCT brouwer FROM bier";
+        conn_db.query(sql, function (err, rows) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(rows)
+            }
+        })
+    });
+
+    app.get('/bieren/first', function (req, res) {
+        let sql = "SELECT * FROM bier ORDER BY id ASC LIMIT 1";
+        conn_db.query(sql, function (err, rows) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(rows)
+            }
+        })  
+    });
+
+    app.get('/bieren/last', function (req, res) {
+        let sql = "SELECT * FROM bier ORDER BY id DESC LIMIT 1";
+        conn_db.query(sql, function (err, rows) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(rows)
+            }
+        })
+    });
+
+    app.get('/bieren/:id', function (req, res) {
+        console.log("req.params:", req.params)
+        let sql = "SELECT * FROM bier WHERE id = ?";
+        conn_db.query(sql, [req.params.id], function (err, rows) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(rows)
+            }
+        })
+    });
+
+
+    app.get('/bieren/naam/:string', function (req, res) {
+        console.log("req.params:", req.params)
+        let sql = "SELECT * FROM bier WHERE naam LIKE ?";
+        conn_db.query(sql, ['%' + req.params.string + '%'], function (err, rows) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(rows)
+            }
+        })
+    });
+
+    app.post('/bieren/create', function (req, res) {
+        console.log("req.body:", req.body)
+        let sql = "INSERT INTO bier (naam, brouwer, type, gisting, perc, inkoop_prijs) VALUES (?, ?, ?, ?, ?, ?)";
+        let values = [
+            req.body.naam,
+            req.body.brouwer,
+            req.body.type,
+            req.body.gisting,
+            req.body.perc,
+            req.body.inkoop_prijs,
+        ];
+        conn_db.query(sql, values, function (err, json) {
+            if (err) {
+                throw err;
+            } else {
+                console.log("json:", json)
+                res.send(json)
+            }
+        })
+    });
+
+
+    app.put('/bieren/update/:id', function (req, res) {
+        console.log("req.body:", req.body)
+        let sql = "UPDATE bier SET naam=?, brouwer=?, type=?, gisting=?, perc=?, inkoop_prijs=? WHERE id=?";
+        let values = [
+            req.body.naam,
+            req.body.brouwer,
+            req.body.type,
+            req.body.gisting,
+            req.body.perc,
+            req.body.inkoop_prijs,
+            req.params.id
+        ];
+        conn_db.query(sql, values, function (err, json) {
+            if (err) {
+                throw err;
+            } else {
+                res.send(json)
+            }
+        })
+    });
+
+    app.delete('/bieren/delete/:id', function (req, res) {
+        let sql = "DELETE FROM bier WHERE id=?";
+        conn_db.query(sql, [req.params.id], function (err, json) {
+            if (err) {
+                console.log(err);
+                res.status(500).send(err.sqlMessage);
+            } else {
+                res.send(json)
+            }
+        })
+    });
+
 }
